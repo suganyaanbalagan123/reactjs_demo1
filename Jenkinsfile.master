@@ -8,7 +8,7 @@ pipeline {
         GITHUB_USERNAME = 'suganyaanbalagan123'
         AWS_REGION = 'ap-south-1'
         AWS_INSTANCE_TYPE = 't2.micro'
-        AWS_SECURITY_GROUP_NAME = 'jenkin' // Replace 'jenkin' with your actual security group nam
+        AWS_SECURITY_GROUP_NAME = 'jenkin' // Replace 'jenkin' with your actual security group name
         AWS_AMI_ID = 'ami-0f5ee92e2d63afc18'
         AWS_KEY_PAIR_NAME = 'jj'
         AWS_INSTANCE_NAME = 'jenkin_deploy'
@@ -56,20 +56,23 @@ pipeline {
                 // Launch an EC2 instance and deploy the Docker image using SSH
 
                 // Launch the EC2 instance
-                withAWS(region: AWS_REGION, credentials: 'your-aws-credentials') {
+                script {
                     def instanceId = awsEc2RunInstance(
+                        region: AWS_REGION,
                         imageId: AWS_AMI_ID,
                         instanceType: AWS_INSTANCE_TYPE,
-                        securityGroups: AWS_SECURITY_GROUP_NAME,
                         keyName: AWS_KEY_PAIR_NAME,
+                        securityGroups: AWS_SECURITY_GROUP_NAME,
                         tagSpecifications: [
-                            [resourceType: "instance", tags: [key: "Name", value: AWS_INSTANCE_NAME]]
+                            [resourceType: 'instance', tags: [
+                                [key: 'Name', value: AWS_INSTANCE_NAME]
+                            ]]
                         ]
                     )
                     echo "EC2 instance with ID: $instanceId launched successfully."
 
                     // Get the public IP address of the launched instance
-                    def publicIpAddress = awsGetEc2Instance(instanceId: instanceId).instances[0].publicIpAddress
+                    def publicIpAddress = awsGetEc2Instance(region: AWS_REGION, instanceId: instanceId).instances[0].publicIpAddress
                     echo "Public IP address of the instance: $publicIpAddress"
 
                     // Wait for SSH to be available on the instance
