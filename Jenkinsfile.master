@@ -13,7 +13,6 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Authenticate with GitHub using the provided credential
-                // Authenticate with GitHub using the provided credentiall
                 withCredentials([usernamePassword(credentialsId: '222', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
                     // Checkout the code from GitHub "dev" branch
                     checkout([$class: 'GitSCM', branches: [[name: 'dev']], userRemoteConfigs: [[url: 'https://github.com/suganyaanbalagan123/reactjs_demo1.git', credentialsId: '222']]])
@@ -40,6 +39,8 @@ pipeline {
             }
         }
 
+        stage('Push to Prod Repo') {
+            steps {
                 // Build and push the Docker image to Docker Hub prod repository
                 dir('/var/lib/jenkins/workspace/reactjs_demo_prod/') {
                     // Build the Docker image using docker-compose
