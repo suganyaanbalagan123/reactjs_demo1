@@ -24,7 +24,7 @@ pipeline {
         stage('Build and Push Docker Image to Dev Repo') {
             steps {
                 // Set the build context to the 'reactjs_pipeline' directory
-                dir('/var/lib/jenkins/workspace/reactjs_demo/') {
+                dir('/var/lib/jenkins/workspace/reactjs_demo_prod/') {
                     // Build the Docker image using docker-compose
                     sh 'docker-compose build myapp'
                 }
@@ -40,15 +40,8 @@ pipeline {
             }
         }
 
-        stage('Merge to Master and Push to Prod Repo') {
-            steps {
-                // Merge dev branch with master (Optional: Perform the merge using Git commands)
-                sh 'git checkout master'
-                sh 'git merge origin/dev'           
-                sh 'git push origin master'
-
                 // Build and push the Docker image to Docker Hub prod repository
-                dir('/var/lib/jenkins/workspace/reactjs_demo/') {
+                dir('/var/lib/jenkins/workspace/reactjs_demo_prod/') {
                     // Build the Docker image using docker-compose
                     sh 'docker-compose build myapp'
                 }
