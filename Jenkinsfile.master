@@ -53,7 +53,7 @@ pipeline {
                 }
             }
             steps {
-                // Launch an EC2 instance and deploy the Docker image using SSH
+                // Launch an EC2 instance and deploy the Docker image using SS
 
                 // Launch the EC2 instance
                 withAWS(region: AWS_REGION, credentials: 'your-aws-credentials') {
