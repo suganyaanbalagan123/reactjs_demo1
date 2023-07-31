@@ -8,7 +8,7 @@ pipeline {
         GITHUB_USERNAME = 'suganyaanbalagan123'
         AWS_REGION = 'ap-south-1'
         AWS_INSTANCE_TYPE = 't2.micro'
-        AWS_SECURITY_GROUP_NAME = 'jenkin'
+        AWS_SECURITY_GROUP_NAME = 'jenkin' // Replace 'jenkin' with your actual security group name
         AWS_AMI_ID = 'ami-0f5ee92e2d63afc18'
         AWS_KEY_PAIR_NAME = 'jj'
         AWS_INSTANCE_NAME = 'jenkin_deploy'
@@ -53,7 +53,7 @@ pipeline {
                 }
             }
             steps {
-                // Launch an EC2 instance and deploy the Docker image using SS
+                // Launch an EC2 instance and deploy the Docker image using SSH
 
                 // Launch the EC2 instance
                 withAWS(region: AWS_REGION, credentials: 'your-aws-credentials') {
@@ -83,6 +83,15 @@ pipeline {
                     }
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
