@@ -46,12 +46,6 @@ pipeline {
         }
 
         stage('Deploy to EC2') {
-            when {
-                anyOf {
-                    branch 'dev'
-                    branch 'master'
-                }
-            }
             steps {
                 // Launch an EC2 instance and deploy the Docker image using SSH
 
