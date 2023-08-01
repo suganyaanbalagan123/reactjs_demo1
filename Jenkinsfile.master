@@ -8,7 +8,7 @@ pipeline {
         GITHUB_USERNAME = 'suganyaanbalagan123'
         AWS_REGION = 'ap-south-1'
         AWS_INSTANCE_TYPE = 't2.micro'
-        AWS_SECURITY_GROUP_NAME = 'jenkin' // Replace 'jenkin' with your actual security group nam
+        AWS_SECURITY_GROUP_NAME = 'jenkin' // Replace 'jenkin' with your actual security group na
         AWS_AMI_ID = 'ami-0f5ee92e2d63afc18'
         AWS_KEY_PAIR_NAME = 'jj'
         AWS_INSTANCE_NAME = 'jenkin_deploy'
