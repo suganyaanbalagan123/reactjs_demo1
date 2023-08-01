@@ -82,6 +82,10 @@ pipeline {
                         // In case of any error, catch the exception and mark the stage as failed
                         currentBuild.result = 'FAILURE'
                         error("Failed to deploy to EC2: ${ex.message}")
+                    } finally {
+                        // Clean up resources or perform other actions after deployment (regardless of success/failure)
+                        // For example, you can terminate the EC2 instance to save costs
+                        awsTerminateInstances(region: AWS_REGION, instanceIds: [instanceId])
                     }
                 }
             }
@@ -89,9 +93,6 @@ pipeline {
     }
 
     post {
-        always {
-            // Clean up resources or perform other actions if needed
-        }
         success {
             echo 'Pipeline completed successfully!'
         }
