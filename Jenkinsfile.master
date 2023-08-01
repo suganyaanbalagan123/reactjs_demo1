@@ -5,14 +5,8 @@ pipeline {
     environment {
         DOCKER_HUB_USERNAME = 'suganyamadhan1996'
         DOCKER_HUB_DEV_REPO = 'dev'
+        DOCKER_HUB_PROD_REPO = 'prod'
         GITHUB_USERNAME = 'suganyaanbalagan123'
-        AWS_REGION = 'ap-south-1'
-        AWS_INSTANCE_TYPE = 't2.micro'
-        AWS_SECURITY_GROUP_NAME = 'jenkin' // Replace 'jenkin' with your actual security group na
-        AWS_AMI_ID = 'ami-0f5ee92e2d63afc18'
-        AWS_KEY_PAIR_NAME = 'jj'
-        AWS_INSTANCE_NAME = 'jenkin_deploy'
-        SSH_CREDENTIALS = '333'
     }
 
     stages {
@@ -20,15 +14,15 @@ pipeline {
             steps {
                 // Authenticate with GitHub using the provided credentials
                 withCredentials([usernamePassword(credentialsId: '222', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
-                    // Checkout the code from GitHub "dev" or "master" branch
-                    checkout([$class: 'GitSCM', branches: [[name: 'dev'], [name: 'master']], userRemoteConfigs: [[url: 'https://github.com/suganyaanbalagan123/reactjs_demo1.git', credentialsId: '222']]])
+                    // Checkout the code from GitHub "dev" branch
+                    checkout([$class: 'GitSCM', branches: [[name: 'dev']], userRemoteConfigs: [[url: 'https://github.com/suganyaanbalagan123/reactjs_demo1.git', credentialsId: '222']]])
                 }
             }
         }
 
         stage('Build and Push Docker Image to Dev Repo') {
             steps {
-                // Set the build context to the 'reactjs_demo_prod' directory
+                // Set the build context to the 'reactjs_pipeline' directory
                 dir('/var/lib/jenkins/workspace/reactjs_demo_prod/') {
                     // Build the Docker image using docker-compose
                     sh 'docker-compose build myapp'
@@ -45,49 +39,22 @@ pipeline {
             }
         }
 
-        stage('Deploy to EC2') {
+        stage('Push to Prod Repo') {
             steps {
-                // Launch an EC2 instance and deploy the Docker image using SSH
-                script {
-                    try {
-                        // Launch the EC2 instance
-                        def instanceId = awsEc2RunInstance(
-                            region: AWS_REGION,
-                            imageId: AWS_AMI_ID,
-                            instanceType: AWS_INSTANCE_TYPE,
-                            keyName: AWS_KEY_PAIR_NAME,
-                            securityGroups: AWS_SECURITY_GROUP_NAME,
-                            tagSpecifications: [
-                                [resourceType: 'instance', tags: [
-                                    [key: 'Name', value: AWS_INSTANCE_NAME]
-                                ]]
-                            ]
-                        )
-                        echo "EC2 instance with ID: $instanceId launched successfully."
-
-                        // Get the public IP address of the launched instance
-                        def publicIpAddress = awsGetEc2Instance(region: AWS_REGION, instanceId: instanceId).instances[0].publicIpAddress
-                        echo "Public IP address of the instance: $publicIpAddress"
-
-                        // Wait for SSH to be available on the instance
-                        waitForSSH(ip: publicIpAddress, port: 22, user: 'ec2-user', failOnTimeout: true)
-
-                        // Deploy the Docker image using SSH
-                        sshagent(credentials: [SSH_CREDENTIALS]) {
-                            sh "ssh -o StrictHostKeyChecking=no ec2-user@${publicIpAddress} 'docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}'"
-                            sh "ssh -o StrictHostKeyChecking=no ec2-user@${publicIpAddress} 'docker pull ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_DEV_REPO}:${BUILD_NUMBER}'"
-                            sh "ssh -o StrictHostKeyChecking=no ec2-user@${publicIpAddress} 'docker run -d -p 80:80 ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_DEV_REPO}:${BUILD_NUMBER}'"
-                        }
-                    } catch (Exception ex) {
-                        // In case of any error, catch the exception and mark the stage as failed
-                        currentBuild.result = 'FAILURE'
-                        error("Failed to deploy to EC2: ${ex.message}")
-                    } finally {
-                        // Clean up resources or perform other actions after deployment (regardless of success/failure)
-                        // For example, you can terminate the EC2 instance to save costs
-                        awsTerminateInstances(region: AWS_REGION, instanceIds: [instanceId])
-                    }
+                // Build and push the Docker image to Docker Hub prod repository
+                dir('/var/lib/jenkins/workspace/reactjs_demo_prod/') {
+                    // Build the Docker image using docker-compose
+                    sh 'docker-compose build myapp'
                 }
+
+                // Authenticate with Docker Hub using --password-stdin
+                withCredentials([usernamePassword(credentialsId: '111', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
+                    sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
+                }
+
+                // Tag and push the Docker image to Docker Hub prod repository
+                sh "docker tag reactjs_demo_myapp ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${BUILD_NUMBER}"
+                sh "docker push ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${BUILD_NUMBER}"
             }
         }
     }
