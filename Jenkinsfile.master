@@ -51,7 +51,7 @@ pipeline {
 
                 // Launch the EC2 instance
                 script {
-                    def instanceId = awsEc2RunInstance(
+                        instanceId = awsEc2RunInstance(
                         region: AWS_REGION,
                         imageId: AWS_AMI_ID,
                         instanceType: AWS_INSTANCE_TYPE,
