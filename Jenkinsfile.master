@@ -62,6 +62,10 @@ pipeline {
     post {
         success {
             echo 'Pipeline completed successfully!'
+            // Archive the generated artifacts as a post-build action
+            archiveArtifacts 'target/*.jar'
+            archiveArtifacts 'target/*.war'
+            // Add any other artifacts you want to archive
         }
         failure {
             echo 'Pipeline failed!'
