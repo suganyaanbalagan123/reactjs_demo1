@@ -13,7 +13,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Authenticate with GitHub using the provided credentials
-                withCredentials([usernamePassword(credentialsId: '222', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
+                withCredentials([usernamePassword(credentialsId: '111', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
                     // Checkout the code from GitHub "dev" branch
                     checkout([$class: 'GitSCM', branches: [[name: 'dev']], userRemoteConfigs: [[url: 'https://github.com/suganyaanbalagan123/reactjs_demo1.git', credentialsId: '222']]])
                 }
@@ -23,7 +23,7 @@ pipeline {
         stage('Build and Push Docker Image to Dev Repo') {
             steps {
                 // Set the build context to the 'reactjs_pipeline' directory
-                dir('/var/lib/jenkins/workspace/reactjs_demo_prod/') {
+                dir('/var/lib/jenkins/workspace/reactjs-demo/') {
                     // Build the Docker image using docker-compose
                     sh 'docker-compose build myapp'
                 }
@@ -42,13 +42,13 @@ pipeline {
         stage('Push to Prod Repo') {
             steps {
                 // Build and push the Docker image to Docker Hub prod repository
-                dir('/var/lib/jenkins/workspace/reactjs_demo_prod/') {
+                dir('/var/lib/jenkins/workspace/reactjs-demo/') {
                     // Build the Docker image using docker-compose
                     sh 'docker-compose build myapp'
                 }
 
                 // Authenticate with Docker Hub using --password-stdin
-                withCredentials([usernamePassword(credentialsId: '111', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
+                withCredentials([usernamePassword(credentialsId: '222', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
                     sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
                 }
 
