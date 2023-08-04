@@ -62,18 +62,7 @@ pipeline {
     post {
         success {
             echo 'Pipeline completed successfully!'
-
-            // Debugging step to list the contents of the "target" directory
-            stage('Debug') {
-                steps {
-                    sh 'ls -l target'
-                }
-            }
-
-            // Archive the generated artifacts as a post-build action
-            archiveArtifacts 'target/*.jar'
-            archiveArtifacts 'target/*.war'
-            // Add any other artifacts you want to archive
+            // No need for the archiveArtifacts step here, as it's removed.
         }
         failure {
             echo 'Pipeline failed!'
