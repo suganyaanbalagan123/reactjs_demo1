@@ -36,6 +36,9 @@ pipeline {
                 // Tag and push the Docker image to Docker Hub dev repository
                 sh "docker tag reactjs-demo_myapp ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_DEV_REPO}:${BUILD_NUMBER}"
                 sh "docker push ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_DEV_REPO}:${BUILD_NUMBER}"
+
+                // Optional: Archive the Docker image as an artifact for backup or future use
+                archiveArtifacts artifacts: '**/*.tar', fingerprint: true
             }
         }
 
@@ -55,6 +58,22 @@ pipeline {
                 // Tag and push the Docker image to Docker Hub prod repository
                 sh "docker tag reactjs-demo_myapp ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${BUILD_NUMBER}"
                 sh "docker push ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${BUILD_NUMBER}"
+
+                // Transfer the Docker image to the target server using the "Publish Over SSH" plugin
+                sshPublisher(
+                    publishers: [
+                        sshPublisherDesc(
+                            configName: 'ubuntu', // The name of the configured SSH server in Jenkins
+                            transfers: [
+                                sshTransfer(
+                                    sourceFiles: 'path/to/your/build/artifact.tar', // Replace this with the correct path to your Docker image artifact
+                                    removePrefix: 'path/to/your/', // Replace this with the correct path prefix to remove from the artifact path
+                                    remoteDirectory: '/path/to/remote/directory/' // Replace this with the remote directory on the target server where you want to store the artifact
+                                )
+                            ]
+                        )
+                    ]
+                )
             }
         }
     }
@@ -62,7 +81,6 @@ pipeline {
     post {
         success {
             echo 'Pipeline completed successfully!'
-            // No need for the archiveArtifacts step here, as it's removed.
         }
         failure {
             echo 'Pipeline failed!'
