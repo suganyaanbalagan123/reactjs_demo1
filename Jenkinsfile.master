@@ -65,7 +65,7 @@ pipeline {
                             configName: 'jenkins1', // The name of the configured SSH server in Jenkins
                             transfers: [
                                 sshTransfer(
-                                    execCommand: "docker-compose -f /home/ubuntu/app/docker-compose.yml up -d",
+                                    execCommand: "/usr/local/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d",
                                     sourceFiles: "docker-compose.yml",
                                     remoteDirectory: "/home/ubuntu/app/"
                                 )
