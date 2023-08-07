@@ -65,8 +65,8 @@ pipeline {
                             configName: 'jenkins1', // The name of the configured SSH server in Jenkins
                             transfers: [
                                 sshTransfer(
-                                    sourceFiles: 'docker-compose.yml',
-                                    removePrefix: '/var/lib/jenkins/workspace/reactjs-demo/', // Adjust the removePrefix accordingly
+                                    sourceFiles: '/reactjs-demo/docker-compose.yml',
+                                    removePrefix: '/var/lib/jenkins/workspace/', // Adjust the removePrefix accordingly
                                     remoteDirectory: '/home/ubuntu/app/' // Replace this with the remote directory on the target server where you want to store the artifact
                                 )
                             ]
