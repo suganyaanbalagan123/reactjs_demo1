@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Authenticate with GitHub using the provided credentia
+                // Authenticate with GitHub using the provided credentials
                 withCredentials([usernamePassword(credentialsId: '111', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
                     // Checkout the code from GitHub "dev" branch
                     checkout([$class: 'GitSCM', branches: [[name: 'dev']], userRemoteConfigs: [[url: 'https://github.com/suganyaanbalagan123/reactjs_demo1.git', credentialsId: '222']]])
@@ -65,9 +65,9 @@ pipeline {
                             configName: 'jenkins1', // The name of the configured SSH server in Jenkins
                             transfers: [
                                 sshTransfer(
-                                        execCommand: "docker-compose -f ${remoteDirectory}docker-compose.yml up -d",
-                                        sourceFiles: "${sourceFiles}",
-                                        remoteDirectory: "${remoteDirectory}"
+                                    execCommand: "docker-compose -f /home/ubuntu/app/docker-compose.yml up -d",
+                                    sourceFiles: "docker-compose.yml",
+                                    remoteDirectory: "/home/ubuntu/app/"
                                 )
                             ]
                         )
