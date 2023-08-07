@@ -67,7 +67,7 @@ pipeline {
                                 sshTransfer(
                                     execCommand: "/usr/local/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d",
                                     sourceFiles: "docker-compose.yml",
-                                    remoteDirectory: "home/ubuntu/app/"
+                                    remoteDirectory: "/home/ubuntu/app/"
                                 )
                             ]
                         )
