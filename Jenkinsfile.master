@@ -37,7 +37,7 @@ pipeline {
                 sh "docker tag reactjs-demo_myapp ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_DEV_REPO}:${BUILD_NUMBER}"
                 sh "docker push ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_DEV_REPO}:${BUILD_NUMBER}"
 
-                // Optional: Archive the Docker image as an artifact for backup or future use
+                // Optional: Archive the Docker image as an artifact for backup or future us
                 archiveArtifacts artifacts: 'docker-compose.yml', fingerprint: true
             }
         }
