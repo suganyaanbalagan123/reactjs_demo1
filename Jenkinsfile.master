@@ -62,7 +62,7 @@ pipeline {
                 sshPublisher(
                     publishers: [
                         sshPublisherDesc(
-                            configName: 'ubuntu', // The name of the configured SSH server in Jenkins
+                            configName: 'jenkins1', // The name of the configured SSH server in Jenkins
                             transfers: [
                                 sshTransfer(
                                     sourceFiles: 'docker-compose.yml',
