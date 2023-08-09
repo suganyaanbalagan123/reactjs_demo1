@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Authenticate with GitHub using the provided credential
+                // Authenticate with GitHub using the provided credentia
                 withCredentials([usernamePassword(credentialsId: '111', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
                     // Checkout the code from GitHub "dev" branch
                     checkout([$class: 'GitSCM', branches: [[name: 'dev']], userRemoteConfigs: [[url: 'https://github.com/suganyaanbalagan123/reactjs_demo1.git', credentialsId: '222']]])
@@ -37,7 +37,7 @@ pipeline {
                 sh "docker tag reactjs-demo_myapp ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_DEV_REPO}:${BUILD_NUMBER}"
                 sh "docker push ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_DEV_REPO}:${BUILD_NUMBER}"
 
-                // Optional: Archive the Docker image as an artifact for backup or future use
+                // Optional: Archive the Docker image as an artifact for backup or future us
                 archiveArtifacts artifacts: 'docker-compose.yml', fingerprint: true
             }
         }
@@ -71,8 +71,7 @@ pipeline {
                                 )
                             ]
                         )
-                    ],
-                    verbose: true // Enable verbose output for debugging
+                    ]
                 )
             }
         }
