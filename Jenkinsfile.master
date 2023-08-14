@@ -52,7 +52,7 @@ pipeline {
 
                 // Execute the Docker Compose command to deploy the application on the target server
                 sshCommand(
-                    host: '65.0.135.60'
+                    host: '65.0.135.60',
                     port: 22, // SSH port (default is 22)
                     username: 'ubuntu', // SSH username on the target server
                     command: "/usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
