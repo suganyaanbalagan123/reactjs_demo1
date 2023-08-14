@@ -35,17 +35,28 @@ pipeline {
         stage('Transfer Files and Execute Docker Compose on Target Server') {
             steps {
                 script {
-                    // Transfer docker-compose.yml file to the target server
-                    sshTransfer(
+                    def remote = [
+                        user: 'ubuntu', // SSH user on the target server
+                        host: '65.0.135.60', // IP address or hostname of the target server
+                        port: 22, // SSH port
                         credentialsId: 'jenkins1', // The name of the configured SSH server in Jenkins
-                        sourceFiles: "docker-compose.yml",
-                        remoteDirectory: "/home/ubuntu/app/"
-                    )
+                    ]
                     
-                    // Execute Docker Compose on the target server
-                    sshCommand(
-                        credentialsId: 'jenkins1', // The name of the configured SSH server in Jenkins
-                        command: "/usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
+                    // Transfer docker-compose.yml file to the target server
+                    sshPublisher(
+                        publishers: [
+                            sshPublisherDesc(
+                                transfers: [
+                                    sshTransfer(
+                                        sourceFiles: "docker-compose.yml",
+                                        removePrefix: '', // Remove any prefix from the remote file path
+                                        remoteDirectory: "/home/ubuntu/app/",
+                                        execCommand: "/usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
+                                    )
+                                ],
+                                remote: remote
+                            )
+                        ]
                     )
                 }
             }
