@@ -1,33 +1,34 @@
-
 pipeline {
     agent any
 
     // Define environment variables
     environment {
         DOCKER_HUB_USERNAME = 'suganyamadhan1996'
-        DOCKER_HUB_REPO = 'react-app'
+        DOCKER_HUB_PROD_REPO = 'prod'
         GITHUB_USERNAME = 'suganyaanbalagan123'
-        TARGET_SERVER = '65.0.135.60'
+        TARGET_SERVER = '65.0.135.60' // Replace with the IP or hostname of your target server
     }
 
     stages {
         stage('Checkout') {
             steps {
                 // Authenticate with GitHub using the provided credentials
-                withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
+                withCredentials([usernamePassword(credentialsId: '111', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
                     // Checkout the code from the GitHub repository
                     checkout([$class: 'GitSCM', branches: [[name: 'dev']], userRemoteConfigs: [[url: 'https://github.com/suganyaanbalagan123/reactjs_demo1.git']]])
                 }
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Pull Docker Image') {
             steps {
-                // Set the build context to the application directory
-                dir('/var/lib/jenkins/workspace/reactjs-demo') {
-                    // Build the Docker image using the previously pushed image on Docker Hub
-                    sh "docker pull ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_REPO}:${BUILD_NUMBER}"
+                // Authenticate with Docker Hub using --password-stdin
+                withCredentials([usernamePassword(credentialsId: '222', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
+                    sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
                 }
+                
+                // Pull the Docker image from Docker Hub's "prod" repository
+                sh "docker pull ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${BUILD_NUMBER}"
             }
         }
 
@@ -37,7 +38,7 @@ pipeline {
                 sshPublisher(
                     publishers: [
                         sshPublisherDesc(
-                            configName: 'jenkins-ssh-config', // The name of the configured SSH server in Jenkins
+                            configName: 'jenkins1', // The name of the configured SSH server in Jenkins
                             transfers: [
                                 sshTransfer(
                                     sourceFiles: "docker-compose.yml",
@@ -48,13 +49,12 @@ pipeline {
                         )
                     ]
                 )
-                
-                // Execute the Docker Compose command on the target server to deploy the application
+
+                // Execute the Docker Compose command to deploy the application on the target server
                 sshCommand(
-                    host: TARGET_SERVER,
-                    port: 22,
-                    username: 'ubuntu', // Adjust the username based on your server's configuration
-                    password: '',
+                    host: 65.0.135.60,
+                    port: 22, // SSH port (default is 22)
+                    username: 'ubuntu', // SSH username on the target server
                     command: "/usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
                 )
             }
