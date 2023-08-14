@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Authenticate with GitHub using the provided credential
+                // Authenticate with GitHub using the provided credentials
                 withCredentials([usernamePassword(credentialsId: '111', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
                     // Checkout the code from the GitHub repository
                     checkout([$class: 'GitSCM', branches: [[name: 'dev']], userRemoteConfigs: [[url: 'https://github.com/suganyaanbalagan123/reactjs_demo1.git']]])
@@ -35,25 +35,17 @@ pipeline {
         stage('Transfer Files and Execute Docker Compose on Target Server') {
             steps {
                 script {
-                    // Define the SSH transfer and command for executing Docker Compose on the target server
-                    def transferSet = [
-                        sshTransfer(
-                            execCommand: "/usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d",
-                            sourceFiles: "docker-compose.yml",
-                            remoteDirectory: "/home/ubuntu/app/"
-                        )
-                    ]
+                    // Transfer docker-compose.yml file to the target server
+                    sshTransfer(
+                        credentialsId: 'jenkins1', // The name of the configured SSH server in Jenkins
+                        sourceFiles: "docker-compose.yml",
+                        remoteDirectory: "/home/ubuntu/app/"
+                    )
                     
-                    // Use the "Publish Over SSH" plugin to transfer files and execute the Docker Compose command on the target server
-                    publishOverSsh(
-                        continueOnError: true, // Continue on error
-                        failOnError: true, // Fail the build if an error occurs
-                        publishers: [
-                            sshPublisherDesc(
-                                configName: 'jenkins1', // The name of the configured SSH server in Jenkins
-                                transfers: transferSet
-                            )
-                        ]
+                    // Execute Docker Compose on the target server
+                    sshCommand(
+                        credentialsId: 'jenkins1', // The name of the configured SSH server in Jenkins
+                        command: "/usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
                     )
                 }
             }
