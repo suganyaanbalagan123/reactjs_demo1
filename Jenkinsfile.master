@@ -32,26 +32,30 @@ pipeline {
             }
         }
 
-        stage('Deploy to Target Server') {
+        stage('Transfer Files and Execute Docker Compose on Target Server') {
             steps {
-                // Transfer the docker-compose.yml file to the target server using the "Publish Over SSH" plugin
-                sshPublisher(
-                    publishers: [
-                        sshPublisherDesc(
-                            configName: 'jenkins1', // The name of the configured SSH server in Jenkins
-                            transfers: [
-                                sshTransfer(
-                                    sourceFiles: "docker-compose.yml",
-                                    remoteDirectory: "/home/ubuntu/app/"
-                                )
-                            ],
-                            verbose: true
+                script {
+                    // Define the SSH transfer and command for executing Docker Compose on the target server
+                    def transferSet = [
+                        sshTransfer(
+                            execCommand: "/usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d",
+                            sourceFiles: "docker-compose.yml",
+                            remoteDirectory: "/home/ubuntu/app/"
                         )
                     ]
-                )
-
-                // Execute the Docker Compose command to deploy the specific image on the target server using "sshCommand" step
-                sshCommand remote: 'jenkins1', command: "/usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
+                    
+                    // Use the "Publish Over SSH" plugin to transfer files and execute the Docker Compose command on the target server
+                    publishOverSsh(
+                        continueOnError: true, // Continue on error
+                        failOnError: true, // Fail the build if an error occurs
+                        publishers: [
+                            sshPublisherDesc(
+                                configName: 'jenkins1', // The name of the configured SSH server in Jenkins
+                                transfers: transferSet
+                            )
+                        ]
+                    )
+                }
             }
         }
     }
