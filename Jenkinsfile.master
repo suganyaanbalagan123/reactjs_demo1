@@ -39,7 +39,7 @@ pipeline {
                         user: 'ubuntu', // SSH user on the target server
                         host: '65.0.135.60', // IP address or hostname of the target server
                         port: 22, // SSH port
-                        credentialsId: 'jenkins1', // The name of the configured SSH server in Jenkins
+                        credentialsId: '555', // The name of the configured SSH server in Jenkins
                     ]
                     
                     // Transfer docker-compose.yml file to the target server
