@@ -1,77 +1,61 @@
+
 pipeline {
     agent any
 
     // Define environment variables
     environment {
         DOCKER_HUB_USERNAME = 'suganyamadhan1996'
-        DOCKER_HUB_DEV_REPO = 'dev'
-        DOCKER_HUB_PROD_REPO = 'prod'
+        DOCKER_HUB_REPO = 'react-app'
         GITHUB_USERNAME = 'suganyaanbalagan123'
+        TARGET_SERVER = '65.0.135.60'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Authenticate with GitHub using the provided credentia
-                withCredentials([usernamePassword(credentialsId: '111', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
-                    // Checkout the code from GitHub "dev" branch
-                    checkout([$class: 'GitSCM', branches: [[name: 'dev']], userRemoteConfigs: [[url: 'https://github.com/suganyaanbalagan123/reactjs_demo1.git', credentialsId: '222']]])
+                // Authenticate with GitHub using the provided credentials
+                withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
+                    // Checkout the code from the GitHub repository
+                    checkout([$class: 'GitSCM', branches: [[name: 'dev']], userRemoteConfigs: [[url: 'https://github.com/suganyaanbalagan123/reactjs_demo1.git']]])
                 }
             }
         }
 
-        stage('Build and Push Docker Image to Dev Repo') {
+        stage('Build Docker Image') {
             steps {
-                // Set the build context to the 'reactjs-demo' directory
+                // Set the build context to the application directory
                 dir('/var/lib/jenkins/workspace/reactjs-demo') {
-                    // Build the Docker image using docker-compose
-                    sh 'docker-compose build myapp'
+                    // Build the Docker image using the previously pushed image on Docker Hub
+                    sh "docker pull ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_REPO}:${BUILD_NUMBER}"
                 }
-
-                // Authenticate with Docker Hub using --password-stdin
-                withCredentials([usernamePassword(credentialsId: '222', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
-                    sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
-                }
-
-                // Tag and push the Docker image to Docker Hub dev repository
-                sh "docker tag reactjs-demo_myapp ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_DEV_REPO}:${BUILD_NUMBER}"
-                sh "docker push ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_DEV_REPO}:${BUILD_NUMBER}"
-
-                // Optional: Archive the Docker image as an artifact for backup or future us
-                archiveArtifacts artifacts: 'docker-compose.yml', fingerprint: true
             }
         }
 
-        stage('Push to Prod Repo') {
+        stage('Deploy to Target Server') {
             steps {
-                // Build the Docker image using docker-compose
-                dir('/var/lib/jenkins/workspace/reactjs-demo') {
-                    sh 'docker-compose build myapp'
-                }
-
-                // Authenticate with Docker Hub using --password-stdin
-                withCredentials([usernamePassword(credentialsId: '222', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
-                    sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
-                }
-
-                // Tag and push the Docker image to Docker Hub prod repository
-                sh "docker tag reactjs-demo_myapp ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${BUILD_NUMBER}"
-                sh "docker push ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${BUILD_NUMBER}"
-
                 // Transfer the docker-compose.yml to the target server using the "Publish Over SSH" plugin
                 sshPublisher(
                     publishers: [
                         sshPublisherDesc(
-                            configName: 'jenkins1', // The name of the configured SSH server in Jenkins
+                            configName: 'jenkins-ssh-config', // The name of the configured SSH server in Jenkins
                             transfers: [
                                 sshTransfer(
-                                    execCommand: "/usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d",
                                     sourceFiles: "docker-compose.yml",
                                     remoteDirectory: "/home/ubuntu/app/"
                                 )
-                            ]
+                            ],
+                            verbose: true
                         )
                     ]
+                )
+                
+                // Execute the Docker Compose command on the target server to deploy the application
+                sshCommand(
+                    host: TARGET_SERVER,
+                    port: 22,
+                    username: 'ubuntu', // Adjust the username based on your server's configuration
+                    password: '',
+                    command: "/usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
                 )
             }
         }
