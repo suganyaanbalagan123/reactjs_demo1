@@ -7,6 +7,7 @@ pipeline {
         DOCKER_HUB_PROD_REPO = 'prod'
         GITHUB_USERNAME = 'suganyaanbalagan123'
         TARGET_SERVER = '65.0.135.60' // Replace with the IP or hostname of your target server
+        IMAGE_TAG = '39'
     }
 
     stages {
@@ -27,14 +28,14 @@ pipeline {
                     sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
                 }
                 
-                // Pull the Docker image from Docker Hub's "prod" repository
-                sh "docker pull ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${BUILD_NUMBER}"
+                // Pull the specific Docker image from Docker Hub's "prod" repository using the provided image tag
+                sh "docker pull ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${IMAGE_TAG}"
             }
         }
 
         stage('Deploy to Target Server') {
             steps {
-                // Transfer the docker-compose.yml to the target server using the "Publish Over SSH" plugin
+                // Transfer the docker-compose.yml file to the target server using the "Publish Over SSH" plugin
                 sshPublisher(
                     publishers: [
                         sshPublisherDesc(
@@ -50,7 +51,7 @@ pipeline {
                     ]
                 )
 
-                // Execute the Docker Compose command to deploy the application on the target server
+                // Execute the Docker Compose command to deploy the specific image on the target server
                 sshCommand(
                     host: '65.0.135.60',
                     port: 22, // SSH port (default is 22)
