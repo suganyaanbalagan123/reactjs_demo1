@@ -6,7 +6,6 @@ pipeline {
         DOCKER_HUB_USERNAME = 'suganyamadhan1996'
         DOCKER_HUB_PROD_REPO = 'prod'
         GITHUB_USERNAME = 'suganyaanbalagan123'
-        TARGET_SERVER = '65.0.135.60' // Replace with the IP or hostname of your target server
         IMAGE_TAG = '39'
     }
 
@@ -51,13 +50,8 @@ pipeline {
                     ]
                 )
 
-                // Execute the Docker Compose command to deploy the specific image on the target server
-                sshCommand(
-                    host: '65.0.135.60',
-                    port: 22, // SSH port (default is 22)
-                    username: 'ubuntu', // SSH username on the target server
-                    command: "/usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
-                )
+                // Execute the Docker Compose command to deploy the specific image on the target server using "sshCommand" step
+                sshCommand remote: 'jenkins1', command: "/usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
             }
         }
     }
