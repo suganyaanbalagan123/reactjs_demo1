@@ -45,17 +45,14 @@ pipeline {
                     // Transfer docker-compose.yml file to the target server
                     sshPublisher(
                         publishers: [
-                            sshPublisherDesc(
-                                transfers: [
-                                    sshTransfer(
-                                        sourceFiles: "docker-compose.yml",
-                                        removePrefix: '', // Remove any prefix from the remote file path
-                                        remoteDirectory: "/home/ubuntu/app/",
-                                        execCommand: "/usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
-                                    )
-                                ],
-                                remote: remote
-                            )
+                            [configName: 'jenkins1', 
+                             transfers: [sshTransfer(
+                                            sourceFiles: "docker-compose.yml",
+                                            removePrefix: '', // Remove any prefix from the remote file path
+                                            remoteDirectory: "/home/ubuntu/app/",
+                                            execCommand: "/usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
+                                        )]
+                            ]
                         ]
                     )
                 }
