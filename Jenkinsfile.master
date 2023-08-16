@@ -46,7 +46,7 @@ pipeline {
                     echo "Remote Configuration: ${remote}"  // Debugging line
                     
                     echo "Remote Directory Contents Before Transfer:"
-                    sh "ssh ubuntu@65.0.135.60 'ls -l /home/ubuntu/app/'"
+                    sh "ssh ubuntu@65.0.135.60 'ls -l app/home/ubuntu/app/'"
    
                     sshPublisher(
                         publishers: [
@@ -55,8 +55,8 @@ pipeline {
                                     sshTransfer(
                                         sourceFiles: "docker-compose.yml",
                                         removePrefix: '', // Remove any prefix from the remote file path
-                                        remoteDirectory: "/home/ubuntu/app/",
-                                        execCommand: "ls -l /home/ubuntu/app/ && /usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
+                                        remoteDirectory: "app/home/ubuntu/app/",
+                                        execCommand: "ls -l app/home/ubuntu/app/ && /usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
                                     )
                                 ],
                                 configName: 'jenkins1'
