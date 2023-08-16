@@ -30,7 +30,8 @@ pipeline {
         stage ('Deploy') {
             steps {
                 script {
-                    def dockerCmd = 'sudo docker-compose up'
+                    def dockerComposePath = "/var/lib/jenkins/workspace/reactjs-demo/docker-compose.yml"
+                    def dockerCmd = "sudo docker-compose -f ${dockerComposePath} up"
                     sshagent(['555']) {
                         sh "ssh -o StrictHostKeyChecking=no ubuntu@65.0.135.60 ${dockerCmd}"
                     }
