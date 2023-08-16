@@ -43,18 +43,29 @@ pipeline {
                     ]
                     
                     // Transfer docker-compose.yml file to the target server
+                    echo "Remote Configuration: ${remote}"  // Debugging line
+                    
+                    echo "Remote Directory Contents Before Transfer:"
+                    sh "ssh ubuntu@65.0.135.60 'ls -l /home/ubuntu/app/'"
+   
                     sshPublisher(
                         publishers: [
-                            [configName: 'jenkins1', 
-                             transfers: [sshTransfer(
-                                            sourceFiles: "docker-compose.yml",
-                                            removePrefix: '', // Remove any prefix from the remote file path
-                                            remoteDirectory: "/home/ubuntu/app/",
-                                            execCommand: "/usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
-                                        )]
-                            ]
+                            sshPublisherDesc(
+                                transfers: [
+                                    sshTransfer(
+                                        sourceFiles: "docker-compose.yml",
+                                        removePrefix: '', // Remove any prefix from the remote file path
+                                        remoteDirectory: "/home/ubuntu/app/",
+                                        execCommand: "ls -l /home/ubuntu/app/ && /usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
+                                    )
+                                ],
+                                configName: 'jenkins1'
+                            )
                         ]
                     )
+                    
+                    echo "Remote Directory Contents After Transfer and Command Execution:"
+                    sh "ssh ubuntu@65.0.135.60 'ls -l /home/ubuntu/app/'"
                 }
             }
         }
