@@ -4,14 +4,12 @@ pipeline {
         DOCKER_HUB_USERNAME = 'suganyamadhan1996'
         DOCKER_HUB_PROD_REPO = 'prod'
         GITHUB_USERNAME = 'suganyaanbalagan123'
-        IMAGE_TAG = '39'
     }
 
     stages {
         stage('Checkout') {
             steps {
                 withCredentials([usernamePassword(credentialsId: '111', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
-                    // Checkout the code from the GitHub repository
                     checkout([$class: 'GitSCM', branches: [[name: 'dev']], userRemoteConfigs: [[url: 'https://github.com/suganyaanbalagan123/reactjs_demo1.git']]])
                 }
             }
@@ -19,12 +17,14 @@ pipeline {
 
         stage('Build and Push Docker Image') {
             steps {
-                sh "docker build -t ${DOCKER_HUB_PROD_REPO}:${IMAGE_TAG} ."
+                def buildNumber = env.BUILD_NUMBER // Get the Jenkins build number
+
+                sh "docker build -t ${DOCKER_HUB_PROD_REPO}:${buildNumber} ."
                 withCredentials([usernamePassword(credentialsId: '222', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
                     sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
                 }
-                sh "docker tag ${DOCKER_HUB_PROD_REPO}:${IMAGE_TAG} ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${IMAGE_TAG}"
-                sh "docker push ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${IMAGE_TAG}"
+                sh "docker tag ${DOCKER_HUB_PROD_REPO}:${buildNumber} ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${buildNumber}"
+                sh "docker push ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${buildNumber}"
             }
         }
 
