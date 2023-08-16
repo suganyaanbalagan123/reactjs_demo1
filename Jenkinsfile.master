@@ -4,6 +4,7 @@ pipeline {
         DOCKER_HUB_USERNAME = 'suganyamadhan1996'
         DOCKER_HUB_PROD_REPO = 'prod'
         GITHUB_USERNAME = 'suganyaanbalagan123'
+        BUILD_NUMBER = "${env.BUILD_NUMBER}" // Define the BUILD_NUMBER environment variable
     }
 
     stages {
@@ -17,14 +18,12 @@ pipeline {
 
         stage('Build and Push Docker Image') {
             steps {
-                def buildNumber = env.BUILD_NUMBER // Get the Jenkins build number
-
-                sh "docker build -t ${DOCKER_HUB_PROD_REPO}:${buildNumber} ."
+                sh "docker build -t ${DOCKER_HUB_PROD_REPO}:${BUILD_NUMBER} ." // Use the BUILD_NUMBER environment variable
                 withCredentials([usernamePassword(credentialsId: '222', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
                     sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
                 }
-                sh "docker tag ${DOCKER_HUB_PROD_REPO}:${buildNumber} ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${buildNumber}"
-                sh "docker push ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${buildNumber}"
+                sh "docker tag ${DOCKER_HUB_PROD_REPO}:${BUILD_NUMBER} ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${BUILD_NUMBER}"
+                sh "docker push ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${BUILD_NUMBER}"
             }
         }
 
