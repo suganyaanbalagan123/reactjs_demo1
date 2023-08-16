@@ -56,7 +56,7 @@ pipeline {
                                         sourceFiles: "docker-compose.yml",
                                         removePrefix: '', // Remove any prefix from the remote file path
                                         remoteDirectory: "/home/ubuntu/app/",
-                                        execCommand: "ls -l app/home/ubuntu/app/ && /usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
+                                        execCommand: "ls -l /home/ubuntu/app/ && /usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
                                     )
                                 ],
                                 configName: 'jenkins1'
