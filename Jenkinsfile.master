@@ -16,9 +16,14 @@ pipeline {
             }
         }
 
-        stage('Build and Push Docker Image') {
+        stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${DOCKER_HUB_PROD_REPO}:${BUILD_NUMBER} ." // Use the BUILD_NUMBER environment variable
+                sh "docker build -t ${DOCKER_HUB_PROD_REPO}:${BUILD_NUMBER} ."
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
                 withCredentials([usernamePassword(credentialsId: '222', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
                     sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
                 }
@@ -30,11 +35,8 @@ pipeline {
         stage ('Deploy') {
             steps {
                 script {
-                    sh "ls -l ${WORKSPACE}" // Print contents of the workspace
-                    def dockerComposePath = "${WORKSPACE}/docker-compose.yml"
-                    def dockerCmd = "sudo docker-compose -f ${dockerComposePath} up"
                     sshagent(['555']) {
-                       sh "ssh -o StrictHostKeyChecking=no ubuntu@65.0.135.60 'cd ~/app/home/ubuntu/app && sudo docker-compose up -d'"
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@65.0.135.60 'sudo docker run -d -p 80:80 ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${BUILD_NUMBER}'"
                     }
                 }
             }
