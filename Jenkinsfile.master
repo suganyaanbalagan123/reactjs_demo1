@@ -32,40 +32,13 @@ pipeline {
             }
         }
 
-        stage('Transfer Files and Execute Docker Compose on Target Server') {
+        stage ('Deploy') {
             steps {
                 script {
-                    def remote = [
-                        user: 'ubuntu', // SSH user on the target server
-                        host: '65.0.135.60', // IP address or hostname of the target server
-                        port: 22, // SSH port
-                        credentialsId: '555', // The name of the configured SSH server in Jenkins
-                    ]
-                    
-                    // Transfer docker-compose.yml file to the target server
-                    echo "Remote Configuration: ${remote}"  // Debugging line
-                    
-                    echo "Remote Directory Contents Before Transfer:"
-                    sh "ssh ubuntu@65.0.135.60 'ls -l /home/ubuntu/app/'"
-   
-                    sshPublisher(
-                        publishers: [
-                            sshPublisherDesc(
-                                transfers: [
-                                    sshTransfer(
-                                        sourceFiles: "docker-compose.yml",
-                                        removePrefix: '', // Remove any prefix from the remote file path
-                                        remoteDirectory: "/home/ubuntu/app/",
-                                        execCommand: "ls -l /home/ubuntu/app/ && /usr/bin/docker-compose -f /home/ubuntu/app/docker-compose.yml up -d"
-                                    )
-                                ],
-                                configName: 'jenkins1'
-                            )
-                        ]
-                    )
-                    
-                    echo "Remote Directory Contents After Transfer and Command Execution:"
-                    sh "ssh ubuntu@65.0.135.60 'ls -l /home/ubuntu/app/'"
+                    def dockerCmd = 'docker-compose up'
+                    sshagent(['555']) {
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@65.0.135.60 ${dockerCmd}"
+                    }
                 }
             }
         }
