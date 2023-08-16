@@ -1,7 +1,5 @@
 pipeline {
     agent any
-
-    // Define environment variables
     environment {
         DOCKER_HUB_USERNAME = 'suganyamadhan1996'
         DOCKER_HUB_PROD_REPO = 'prod'
@@ -12,7 +10,6 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Authenticate with GitHub using the provided credentia
                 withCredentials([usernamePassword(credentialsId: '111', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
                     // Checkout the code from the GitHub repository
                     checkout([$class: 'GitSCM', branches: [[name: 'dev']], userRemoteConfigs: [[url: 'https://github.com/suganyaanbalagan123/reactjs_demo1.git']]])
@@ -20,22 +17,21 @@ pipeline {
             }
         }
 
-        stage('Pull Docker Image') {
+        stage('Build and Push Docker Image') {
             steps {
-                // Authenticate with Docker Hub using --password-stdin
+                sh "docker build -t ${DOCKER_HUB_PROD_REPO}:${IMAGE_TAG} ."
                 withCredentials([usernamePassword(credentialsId: '222', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
                     sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
                 }
-                
-                // Pull the specific Docker image from Docker Hub's "prod" repository using the provided image ta
-                sh "docker pull ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${IMAGE_TAG}"
+                sh "docker tag ${DOCKER_HUB_PROD_REPO}:${IMAGE_TAG} ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${IMAGE_TAG}"
+                sh "docker push ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${IMAGE_TAG}"
             }
         }
 
         stage ('Deploy') {
             steps {
                 script {
-                    def dockerCmd = 'sudo docker run -d -p 80:80 suganyamadhan1996/prod:39'
+                    def dockerCmd = 'sudo docker-compose up'
                     sshagent(['555']) {
                         sh "ssh -o StrictHostKeyChecking=no ubuntu@65.0.135.60 ${dockerCmd}"
                     }
