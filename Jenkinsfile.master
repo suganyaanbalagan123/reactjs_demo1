@@ -35,7 +35,7 @@ pipeline {
         stage ('Deploy') {
             steps {
                 script {
-                    def dockerCmd = 'docker-compose up'
+                    def dockerCmd = 'docker run -d -p 80:80 suganyamadhan1996/prod:latest'
                     sshagent(['555']) {
                         sh "ssh -o StrictHostKeyChecking=no ubuntu@65.0.135.60 ${dockerCmd}"
                     }
