@@ -34,7 +34,7 @@ pipeline {
                     def dockerComposePath = "${WORKSPACE}/docker-compose.yml"
                     def dockerCmd = "sudo docker-compose -f ${dockerComposePath} up"
                     sshagent(['555']) {
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@65.0.135.60 ${dockerCmd}"
+                       sh "ssh -o StrictHostKeyChecking=no ubuntu@65.0.135.60 'cd ~/app/home/ubuntu/app && sudo docker-compose up -d'"
                     }
                 }
             }
