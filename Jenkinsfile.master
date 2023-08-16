@@ -27,7 +27,7 @@ pipeline {
                     sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
                 }
                 
-                // Pull the specific Docker image from Docker Hub's "prod" repository using the provided image tag
+                // Pull the specific Docker image from Docker Hub's "prod" repository using the provided image ta
                 sh "docker pull ${DOCKER_HUB_USERNAME}/${DOCKER_HUB_PROD_REPO}:${IMAGE_TAG}"
             }
         }
